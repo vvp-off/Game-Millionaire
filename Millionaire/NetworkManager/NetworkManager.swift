@@ -11,7 +11,7 @@ enum NetworkError: String, Error {
     case badURL = "❌Error - bad URL"
     case sessionError = "❌Error - URLSession"
     case data = "❌Error - no data"
-    case decode = "❌Error - JSON decoder error"
+    case decode = "❌Error - JSON decoder error / response"
 }
 
 enum QuestionCategory: String {
@@ -28,11 +28,10 @@ class NetworkManager {
     private let pathComponent = "/api.php"
     
     private let questionCount = "5"
-    private var difficulties = ["easy", "medium", "hard"]
     private let questionCategory = UserDefaults.standard.string(forKey: "questionCategory") //category number
-    private let questionType = UserDefaults.standard.string(forKey: "questionType") ?? "multiple" //multiple boolean
+    private let questionType = UserDefaults.standard.string(forKey: "questionType") ?? "multiple" //multiple, boolean
 
-    func fetchQuestions(difficulty: String, completion: @escaping(Result<[Question],NetworkError>) -> Void) {
+    func fetchQuestionsByDifficylt(difficulty: String, completion: @escaping(Result<[Question],NetworkError>) -> Void) {
         
         var urlComponents = URLComponents()
         urlComponents.scheme = scheme
@@ -50,14 +49,16 @@ class NetworkManager {
         urlComponents.queryItems = queryItems
         
         guard let url = urlComponents.url else { completion(.failure(.badURL)); return}
+        print("✅ Current URL -->", url.absoluteString)
         
         let request = URLRequest(url: url)
         
-        URLSession.shared.dataTask(with: request) { data, _, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else { completion(.failure(.sessionError)); return}
             guard let data = data else { completion(.failure(.data)); return}
             
             do {
+                print(data)
                 let questions = try JSONDecoder().decode(Questions.self, from: data)
                 print("✅ \(difficulty) questions --- >>", questions.results)
                 completion(.success(questions.results)) // array of questions
@@ -67,33 +68,44 @@ class NetworkManager {
         }.resume()
     }
     
-    func fetchGameQuestions(completion: @escaping(Result<[Question], NetworkError>) -> Void) {
-        var gameQuestions: [Question] = []
+    func fetchGameQuestions(completion: @escaping (Result<[Question], NetworkError>) -> Void) {
+        let difficulties = ["easy", "medium", "hard"]
+        var allQuestions: [Question] = []
         var fetchError: NetworkError?
-        let group = DispatchGroup()
-        
-        for level in difficulties {
-            group.enter()
-            fetchQuestions(difficulty: level) { result in
+
+        func fetchSequentially(index: Int) {
+            guard index < difficulties.count else {
+                if let error = fetchError {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(allQuestions))
+                    print("✅ All questions -->", allQuestions)
+                }
+                return
+            }
+
+            let currentDifficulty = difficulties[index]
+
+            fetchQuestionsByDifficylt(difficulty: currentDifficulty) { result in
                 switch result {
                 case .success(let questions):
-                    gameQuestions += questions
+                    allQuestions.append(contentsOf: questions)
                 case .failure(let error):
                     fetchError = error
+                    print("❌ \(currentDifficulty):", error.rawValue)
                 }
-                group.leave()
+
+                if index < difficulties.count - 1 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                        fetchSequentially(index: index + 1)
+                    }
+                } else {
+                    fetchSequentially(index: index + 1)
+                }
             }
         }
-        
-        group.notify(queue: .main) {
-            if let error = fetchError {
-                completion(.failure(.sessionError))
-            } else {
-                completion(.success(gameQuestions))
-                print(print("✅ All questions -->", gameQuestions))
-            }
-        }
-        
+        fetchSequentially(index: 0)
     }
 }
+
 
