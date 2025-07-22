@@ -8,6 +8,7 @@
 import Foundation
 
 struct Questions: Codable {
+    let response_code: Int
     let results: [Question]
 }
 
