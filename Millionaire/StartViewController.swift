@@ -57,6 +57,7 @@ class StartViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 24)
         button.heightAnchor.constraint(equalToConstant: 62).isActive = true
+        button.addTarget(nil, action: #selector(startGameButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -182,4 +183,9 @@ class StartViewController: UIViewController {
         
     }
     
+    @objc
+    private func startGameButtonAction() {
+        let mainViewController = MainViewController()
+        navigationController?.pushViewController(mainViewController, animated: true)
+    }
 }
