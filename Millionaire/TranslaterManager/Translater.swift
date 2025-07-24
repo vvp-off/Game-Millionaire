@@ -23,7 +23,7 @@ class TranslaterManager {
         guard charactersCount < 1500 else { print("🔡❌ 1500+ simbols limit"); return}
         UserDefaults.standard.set(charactersCount + translatedCharactersCount, forKey: "translatedCharactersCount")
         print("🔡 All translated Characters count - \(UserDefaults.standard.integer(forKey: "translatedCharactersCount"))")
-        guard translatedCharactersCount < 50000 else { apiKey = ""; print("🔡❌ 50_000 simbols translated / delete api key"); return}
+        guard translatedCharactersCount < 10000 else { apiKey = ""; print("🔡❌ 10_000 simbols translated / delete api key"); return}
         // end check ;)
         
         let rawValue: TranslaterRequest = TranslaterRequest(texts: text)
