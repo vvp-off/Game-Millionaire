@@ -138,6 +138,11 @@ class StartViewController: UIViewController {
     }
     
     override func viewDidLoad() {
+        
+        // STORAGE MANAGER
+        StorageManager().setGameQuestions()
+        
+        
         super.viewDidLoad()
         
         view.addSubview(backgroundView)
