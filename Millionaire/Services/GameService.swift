@@ -86,7 +86,7 @@ class GameService {
                     }
                 } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + self.delay) {
-                        self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer, )
+                        self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer )
                     }
                 }
             } else if self.mistakeIsOn {
@@ -182,6 +182,21 @@ extension GameService {
         guard !mistakeIsOn else { return }
         mistakeIsOn = true
         delegate?.didUseMistake()
+    }
+    
+    func isUnfinishedGame() -> Bool {
+        //TODO: реализовать функцию по возврату есть незавершенная игра
+        return true
+    }
+    
+    func isBestScore() -> Bool {
+        //TODO: реализовать функцию по возврату есть ли лучший результат
+        return true
+    }
+    
+    func getBestScoreValue() -> String {
+        //TODO: реализовать функцию по возврату количества наибольших очков
+        return "1500"
     }
 }
 
