@@ -132,6 +132,7 @@ class StartViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        navigationItem.backButtonTitle = ""
         setGradientBackground(startGameButton)
         applyPolygonMask(to: startGameButton)
         addBorder(to: startGameButton)

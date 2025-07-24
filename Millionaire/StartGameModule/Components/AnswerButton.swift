@@ -52,6 +52,9 @@ final class AnswerButton: UIControl {
         prefixLabel.text = prefix
         answerLabel.text = answerText
         backgroundImageView.image = image
+        
+        prefixLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        answerLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         addSubviews()
         setupConstraints()
@@ -99,7 +102,7 @@ private extension AnswerButton {
         horizontalStack.addArrangedSubview(prefixLabel)
         horizontalStack.addArrangedSubview(answerLabel)
     }
-    
+
      func setupConstraints() {
          NSLayoutConstraint.activate(
             [
