@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Апишка возвращает строки с html разметкой., расширение исправляет эти строка/поля, что бы вопросы становились блее привленкательными без лишних символов
 extension String {
     var htmlDecoded: String {
         guard let data = self.data(using: .utf8) else { return self }

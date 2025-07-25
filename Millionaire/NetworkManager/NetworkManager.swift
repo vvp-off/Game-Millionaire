@@ -31,7 +31,7 @@ class NetworkManager {
     private let questionCategory = UserDefaults.standard.string(forKey: "questionCategory") //category number
     private let questionType = UserDefaults.standard.string(forKey: "questionType") ?? "multiple" //multiple, boolean
 
-    func fetchQuestionsByDifficylt(difficulty: String, completion: @escaping(Result<[Question],NetworkError>) -> Void) {
+    private func fetchQuestionsByDifficylt(difficulty: String, completion: @escaping(Result<[Question],NetworkError>) -> Void) {
         
         var urlComponents = URLComponents()
         urlComponents.scheme = scheme
@@ -58,7 +58,6 @@ class NetworkManager {
             guard let data = data else { completion(.failure(.data)); return}
             
             do {
-                print(data)
                 let questions = try JSONDecoder().decode(Questions.self, from: data)
                 print("✅ \(difficulty) questions --- >>", questions.results)
                 completion(.success(questions.results)) // array of questions
@@ -107,5 +106,4 @@ class NetworkManager {
         fetchSequentially(index: 0)
     }
 }
-
 
