@@ -148,17 +148,12 @@ class StartViewController: UIViewController {
         sv.axis = .vertical
         sv.spacing = 16
         sv.alignment = .fill
-
-
-        button.layer.addSublayer(borderLayer)
-    }
+        return sv
+    }()
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         navigationItem.backButtonTitle = ""
-        setGradientBackground(startGameButton)
-        applyPolygonMask(to: startGameButton)
-        addBorder(to: startGameButton)
     }
 
     
