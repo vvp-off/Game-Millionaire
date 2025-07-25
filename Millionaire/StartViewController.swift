@@ -9,6 +9,8 @@ import UIKit
 
 class StartViewController: UIViewController {
     
+    let gameService = GameService()
+    
     let backgroundView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -28,7 +30,7 @@ class StartViewController: UIViewController {
         return button
     }()
     
-    let mainLogoView: UIImageView = {
+    let mainLogoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
@@ -39,7 +41,7 @@ class StartViewController: UIViewController {
         return imageView
     }()
     
-    let mainTextLabel: UILabel = {
+    let mainTextLabelTitle: UILabel = {
         let text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
         text.text = "Who Wants\n to be a Millionare"
@@ -50,82 +52,103 @@ class StartViewController: UIViewController {
         return text
     }()
     
-    let startGameButton: UIButton = {
+    let mainTextAndLogoStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .vertical
+        sv.spacing = 16
+        sv.alignment = .center
+        return sv
+    }()
+    
+    lazy var bestScoreLabelTitel: UILabel = {
+        let text = UILabel()
+        text.translatesAutoresizingMaskIntoConstraints = false
+        text.text = "All-time Best Score"
+        text.font = UIFont.systemFont(ofSize: 16)
+        text.textColor = .white
+        text.alpha = 0.5
+        return text
+    }()
+    
+    lazy var bestScoreCoin: UIImageView = {
+       let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        let image = UIImage(named: "coin")
+        imageView.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        imageView.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        imageView.image = image
+        return imageView
+    }()
+    
+    lazy var bestScoreValueLabel: UILabel = {
+        let text = UILabel()
+        text.translatesAutoresizingMaskIntoConstraints = false
+        text.text = "$\(gameService.getBestScoreValue())"
+        text.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+        text.textColor = .white
+        return text
+    }()
+    
+    lazy var coinAndValueStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .horizontal
+        sv.spacing = 1.5
+        sv.alignment = .center
+
+        return sv
+    }()
+    
+    lazy var bestScoreStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .vertical
+        sv.spacing = 8
+        sv.alignment = .center
+        return sv
+    }()
+    
+    lazy var bestScoreAndMainLogoStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .vertical
+        sv.spacing = 16
+        sv.alignment = .center
+        return sv
+    }()
+    
+    lazy var startGameButton: UIButton = {
+        return createButton(with: "Start game", action: startGameButtonAction, bgImage: "blueButton")
+    }()
+    
+    lazy var continueGameButton: UIButton = {
+        return createButton(with: "Continue game", action: startGameButtonAction, bgImage: "orangeButton")
+    }()
+    
+    private func createButton(with title: String, action: @escaping () -> Void, bgImage: String) -> UIButton {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("New game", for: .normal)
+        button.setTitle(title, for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 24)
         button.heightAnchor.constraint(equalToConstant: 62).isActive = true
-        button.addTarget(nil, action: #selector(startGameButtonAction), for: .touchUpInside)
-        return button
-    }()
-    
-    func createButtonMask(rect: CGRect) -> UIBezierPath {
-        let path = UIBezierPath()
-        let width = rect.size.width
-        let height = rect.size.height
+        button.setBackgroundImage(UIImage(named: bgImage), for: .normal)
         
-        path.move(to: CGPoint(x: 0.8818*width, y: 0.02206*height))
-        path.addCurve(to: CGPoint(x: 0.93521*width, y: 0.14538*height),
-                      controlPoint1: CGPoint(x: 0.90272*width, y: 0.02206*height),
-                      controlPoint2: CGPoint(x: 0.92245*width, y: 0.06762*height))
-        path.addLine(to: CGPoint(x: 0.99118*width, y: 0.48654*height))
-        path.addLine(to: CGPoint(x: 0.99339*width, y: 0.5*height))
-        path.addLine(to: CGPoint(x: 0.99118*width, y: 0.51346*height))
-        path.addLine(to: CGPoint(x: 0.93521*width, y: 0.85462*height))
-        path.addCurve(to: CGPoint(x: 0.8818*width, y: 0.97794*height),
-                      controlPoint1: CGPoint(x: 0.92245*width, y: 0.93238*height),
-                      controlPoint2: CGPoint(x: 0.90272*width, y: 0.97794*height))
-        path.addLine(to: CGPoint(x: 0.1182*width, y: 0.97794*height))
-        path.addCurve(to: CGPoint(x: 0.06479*width, y: 0.85462*height),
-                      controlPoint1: CGPoint(x: 0.09728*width, y: 0.97794*height),
-                      controlPoint2: CGPoint(x: 0.07755*width, y: 0.93238*height))
-        path.addLine(to: CGPoint(x: 0.00881*width, y: 0.51346*height))
-        path.addLine(to: CGPoint(x: 0.00661*width, y: 0.5*height))
-        path.addLine(to: CGPoint(x: 0.00881*width, y: 0.48654*height))
-        path.addLine(to: CGPoint(x: 0.06479*width, y: 0.14538*height))
-        path.addCurve(to: CGPoint(x: 0.1182*width, y: 0.02206*height),
-                      controlPoint1: CGPoint(x: 0.07755*width, y: 0.06762*height),
-                      controlPoint2: CGPoint(x: 0.09728*width, y: 0.02206*height))
-        path.close()
-        return path
+        let action = UIAction { _ in action() }
+        button.addAction(action, for: .touchUpInside)
+        
+        return button
     }
     
-    
-    func applyPolygonMask(to button: UIButton) {
-        let path = createButtonMask(rect: button.bounds)
-        let mask = CAShapeLayer()
-        mask.path = path.cgPath
-        button.layer.mask = mask
-    }
-    
-    func setGradientBackground(_ item: UIView) {
-        if item.layer.sublayers?.first(where: { $0 is CAGradientLayer }) == nil {
-            
-            let gradientLayer = CAGradientLayer()
-            gradientLayer.colors = [
-                UIColor(resource: .startGradient).cgColor,
-                UIColor(resource: .endGradient).cgColor,
-                UIColor(resource: .endGradient).cgColor,
-                UIColor(resource: .startGradient).cgColor
-            ]
-            gradientLayer.locations = [0.0, 0.33, 0.8, 1.0]
-            gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
-            gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
-            gradientLayer.frame = item.bounds
-            item.layer.insertSublayer(gradientLayer, at: 0)
-        }
-    }
-    
-    func addBorder(to button: UIButton) {
-        let path = createButtonMask(rect: button.bounds)
-        let borderLayer = CAShapeLayer()
-        borderLayer.path = path.cgPath
-        borderLayer.strokeColor = UIColor.white.cgColor
-        borderLayer.fillColor = UIColor.clear.cgColor
-        borderLayer.lineWidth = 3
-        borderLayer.frame = button.bounds
+    lazy var buttonsStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .vertical
+        sv.spacing = 16
+        sv.alignment = .fill
+
 
         button.layer.addSublayer(borderLayer)
     }
@@ -137,8 +160,14 @@ class StartViewController: UIViewController {
         applyPolygonMask(to: startGameButton)
         addBorder(to: startGameButton)
     }
+
     
     override func viewDidLoad() {
+        
+        // STORAGE MANAGER
+        StorageManager().setGameQuestions()
+        
+        
         super.viewDidLoad()
         
         view.addSubview(backgroundView)
@@ -150,42 +179,64 @@ class StartViewController: UIViewController {
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         
+        
         view.addSubview(helpButton)
         
         NSLayoutConstraint.activate([
             helpButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            helpButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12)
+            helpButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -20)
         ])
         
-        view.addSubview(mainLogoView)
+        view.addSubview(bestScoreAndMainLogoStackView)
         
         NSLayoutConstraint.activate([
-            mainLogoView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 163),
-            mainLogoView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            bestScoreAndMainLogoStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 124),
+            bestScoreAndMainLogoStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
+            bestScoreAndMainLogoStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
+            bestScoreAndMainLogoStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
-        view.addSubview(mainTextLabel)
+        bestScoreAndMainLogoStackView.addArrangedSubview(mainTextAndLogoStackView)
+
+        mainTextAndLogoStackView.addArrangedSubview(mainLogoImageView)
+        mainTextAndLogoStackView.addArrangedSubview(mainTextLabelTitle)
+        
+        //TODO: реализовать метод, который возвращает есть ли лучший результат
+        if gameService.isBestScore() {
+            bestScoreAndMainLogoStackView.addArrangedSubview(bestScoreStackView)
+            
+            bestScoreStackView.addArrangedSubview(bestScoreLabelTitel)
+            bestScoreStackView.addArrangedSubview(coinAndValueStackView)
+            
+            coinAndValueStackView.addArrangedSubview(bestScoreCoin)
+            coinAndValueStackView.addArrangedSubview(bestScoreValueLabel)
+        }
+
+        
+        view.addSubview(buttonsStackView)
         
         NSLayoutConstraint.activate([
-            mainTextLabel.topAnchor.constraint(equalTo: mainLogoView.bottomAnchor, constant: 16),
-            mainTextLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
-            mainTextLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            mainTextLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            buttonsStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -109),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
+            buttonsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
-        view.addSubview(startGameButton)
-        
-        NSLayoutConstraint.activate([
-            startGameButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -109),
-            startGameButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
-            startGameButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            startGameButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-        
+        buttonsStackView.addArrangedSubview(startGameButton)
+        //TODO: реализовать метод, который возвращает есть ли незавершенная игра
+        if gameService.isUnfinishedGame() {
+            buttonsStackView.insertArrangedSubview(continueGameButton, at: 0)
+        }
     }
-    
+
     @objc
     private func startGameButtonAction() {
+        let mainViewController = MainViewController()
+        navigationController?.pushViewController(mainViewController, animated: true)
+    }
+    //TODO: вероятно нужно как то иначе делать переход так как данные идут не с нуля
+    @objc
+    private func continueGameButtonAction() {
         let mainViewController = MainViewController()
         navigationController?.pushViewController(mainViewController, animated: true)
     }
