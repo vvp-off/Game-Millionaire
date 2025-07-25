@@ -18,17 +18,18 @@ protocol GameDelegate: AnyObject {
     func secondLifeWorked(wrongAnswer: String) // Сработала "Вторая попытка" нужно закрасить неправильный ответ
 }
 
-class GameService {
+final class GameService {
+
     weak var delegate: GameDelegate?
-    var onDataLoaded: (() -> Void)? // Вызывается когда данные полностью загружены, после загрузки нужно вызвать startGame
-    
+    // Вызывается когда данные полностью загружены, после загрузки нужно вызвать startGame
+    var onDataLoaded: (() -> Void)?
+
     private let soundService = SoundService()
     private let dataManager = DataManager()
-    
+
     private var currentQuestionIndex = 0
     private var questions: [Question] = []
-    
-    
+
     private var fiftyOnFiftyIsOn = false
     private var audienceIsOn = false
     private var mistakeIsOn = false
@@ -42,8 +43,8 @@ class GameService {
     init() {
         loadData()
     }
-    
-    private func loadData() {
+
+    func loadData() {
         NetworkManager().fetchGameQuestions { result in
             switch result {
             case .success(let data):
@@ -60,7 +61,7 @@ class GameService {
             }
         }
     }
-    
+
     func startGame() {
         guard !questions.isEmpty else { return }
         currentQuestionIndex = 0
@@ -68,14 +69,23 @@ class GameService {
         delegate?.showQuestion(question: questions[currentQuestionIndex], questionNumber: currentQuestionIndex + 1)
         
     }
-    
-    func selectAnswer(_ selected: String) {
+
+    func getQuestionNumber() -> Int {
+        currentQuestionIndex + 1
+    }
+
+    func getCurrentQuestion() -> Question? {
+        guard !questions.isEmpty else { return nil }
+        return questions[currentQuestionIndex]
+    }
+
+    func selectAnswer(_ selected: String) -> Bool {
         soundService.play(sound: .choiseIsMade)
-        
+
+        let isCorrect = selected == currentQuestion.correctAnswer
+
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            
-            
-            if selected == self.currentQuestion.correctAnswer {
+            if isCorrect {
                 self.soundService.play(sound: .correctAnswer)
                 self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer)
                 
@@ -86,7 +96,8 @@ class GameService {
                     }
                 } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + self.delay) {
-                        self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer )
+                        self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer)
+
                     }
                 }
             } else if self.mistakeIsOn {
@@ -97,13 +108,20 @@ class GameService {
                 self.delegate?.selectCurrentAnswer(correctAnswer: self.currentQuestion.correctAnswer)
                 self.wrongAnswer()
             }
-            
         }
+
+        return isCorrect
+    }
+
+    func nextQuestion() {
+        currentQuestionIndex += 1
+        soundService.play(sound: .timeTicking)
+        delegate?.showQuestion(question: currentQuestion, questionNumber: currentQuestionIndex + 1)
     }
     
     private func wrongAnswer() {
         soundService.play(sound: .wrongAnswer)
-        
+
         let money: Int = {
             switch currentQuestionIndex {
             case 0...5: return 0
@@ -118,70 +136,72 @@ class GameService {
             self.soundService.stop()
         }
     }
-    
-    func nextQuestion() {
-        currentQuestionIndex += 1
-        soundService.play(sound: .timeTicking)
-        delegate?.showQuestion(question: currentQuestion, questionNumber: currentQuestionIndex + 1)
-    }
-    
+
     private func showCorrectAnswer() {
         soundService.play(sound: .correctAnswer)
         delegate?.selectCurrentAnswer(correctAnswer: currentQuestion.correctAnswer)
     }
-    
-    func getQuestionNumber() -> Int {
-        currentQuestionIndex + 1
-    }
 }
 
+// MARK: - Hints
+
 extension GameService {
-    func fiftyOnFiftyIsOnTapped() {
-        guard !fiftyOnFiftyIsOn else { return }
-        fiftyOnFiftyIsOn = true
-        
-        let incorrectAnswers = currentQuestion.incorrectAnswers.shuffled()
-        guard incorrectAnswers.count >= 2 else { return }
-        
-        let wrong1 = incorrectAnswers[0]
-        let wrong2 = incorrectAnswers[1]
-        
-        delegate?.didUseFiftyOnFifty(wrongAnswer1: wrong1, wrongAnswer2: wrong2)
-    }
     
-    func audienceIsOnTapped() {
-        guard !audienceIsOn else { return }
-        audienceIsOn = true
-        
-        let correctAnswer = currentQuestion.correctAnswer
-        let incorresctAnswers = currentQuestion.incorrectAnswers
-        
-        
-        let correctShouldBeTop = Int.random(in: 0..<100) < 70
-        let correctPercentage = correctShouldBeTop ? Int.random(in: 55...75) : Int.random(in: 10...40)
-        
-        let remainsPercentage = 100 - correctPercentage
-        
-        let wrong1 = Int.random(in: 5...(remainsPercentage - 10))
-        let wrong2 = Int.random(in: 1...(remainsPercentage - wrong1 - 5))
-        let wrong3 = remainsPercentage - wrong1 - wrong2
-        
-        let wrongs = [wrong1, wrong2, wrong3].shuffled()
-        
-        var result: [String: Int] = [:]
-        for (index, answer) in incorresctAnswers.enumerated() {
-            result[answer] = wrongs[index]
+    func getFiftyOnFiftyAnswerIndexes() -> [Int] {
+        guard let correctIndex = currentQuestion.allAnswers.firstIndex(of: currentQuestion.correctAnswer) else {
+            return []
         }
-        
-        result[correctAnswer] = correctPercentage
-        
-        delegate?.didUseAudience(result: result)
+
+        let incorrectIndexes = currentQuestion.allAnswers.indices.filter { $0 != correctIndex }
+
+        if let randomIncorrectIndex = incorrectIndexes.randomElement() {
+            return [correctIndex, randomIncorrectIndex]
+        } else {
+            return [correctIndex]
+        }
     }
-    
-    func mistakeIsOnTapped() {
-        guard !mistakeIsOn else { return }
-        mistakeIsOn = true
-        delegate?.didUseMistake()
+
+    func audienceDistribution() -> [Int: Int] {
+        guard let correctIndex = currentQuestion.allAnswers.firstIndex(of: currentQuestion.correctAnswer) else {
+            return [:]
+        }
+
+        let correctPercent = 70
+        let remainingPercent = 100 - correctPercent
+
+        let incorrectIndexes = currentQuestion.allAnswers.indices.filter { $0 != correctIndex }
+
+        let wrong1 = Int.random(in: 5...(remainingPercent - 10))
+        let wrong2 = Int.random(in: 1...(remainingPercent - wrong1 - 5))
+        let wrong3 = remainingPercent - wrong1 - wrong2
+
+        let wrongPercents = [wrong1, wrong2, wrong3].shuffled()
+
+        var distribution: [Int: Int] = [:]
+        distribution[correctIndex] = correctPercent
+
+        for (idx, wrongIndex) in incorrectIndexes.enumerated() {
+            distribution[wrongIndex] = wrongPercents[idx]
+        }
+
+        return distribution
+    }
+
+    func callFriend() -> String {
+        guard let correctIndex = currentQuestion.allAnswers.firstIndex(of: currentQuestion.correctAnswer) else {
+            return "Извини, я не уверен в ответе "
+        }
+
+        let selectedIndex: Int
+        if Bool.random(probability: 0.8) {
+            selectedIndex = correctIndex
+        } else {
+            let incorrectIndexes = currentQuestion.allAnswers.indices.filter { $0 != correctIndex }
+            selectedIndex = incorrectIndexes.randomElement() ?? correctIndex
+        }
+
+        let letter = ["A", "B", "C", "D"][selectedIndex]
+        return "🧑‍💼 Я думаю, правильный ответ — \(letter)"
     }
     
     func isUnfinishedGame() -> Bool {

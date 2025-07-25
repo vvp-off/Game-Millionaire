@@ -76,5 +76,4 @@ final class TimerView: UIView {
     func setBackgroundColor(_ color: UIColor, alphaComponent: CGFloat = 0.3) {
         backgroundColor = color.withAlphaComponent(alphaComponent)
     }
-
 }
