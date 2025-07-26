@@ -25,9 +25,6 @@ final class MainViewController: UIViewController {
         MoneyForQuestionModel(numberOfQuestions: 15, money: 1000000)
     ]
 
-    private let gameService = GameService()
-    private let soundService = SoundService()
-
     private var timer: Timer?
     private var totalTime = 30
     private var secondsPassed = 0
@@ -182,19 +179,35 @@ final class MainViewController: UIViewController {
         setupButtons()
         setupGradient()
         setupNavigationBar()
-        gameService.loadData()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         onDataLoaded()
+        GameService.shared.loadData()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        if self.isMovingFromParent {
+            pauseGame()
+        }
     }
 
+    private func pauseGame() {
+        timer?.invalidate()
+        timer = nil
+        SoundService.shared.stop()
+    }
+    
     // MARK: - Setup UI
-
     private func onDataLoaded() {
-        gameService.onDataLoaded = { [weak self] in
-            self?.gameService.startGame()
-            self?.startTimer(time: 30)
-            
-            if let question = self?.gameService.getCurrentQuestion() {
-                self?.updateQuestionUI(with: question, number: self?.gameService.getQuestionNumber() ?? 1)
+        GameService.shared.onDataLoaded = {
+            GameService.shared.startGame()
+            self.startTimer(time: 30)
+            if let question = GameService.shared.getCurrentQuestion() {
+                self.updateQuestionUI(with: question, number: GameService.shared.getQuestionNumber())
             }
         }
     }
@@ -242,6 +255,25 @@ final class MainViewController: UIViewController {
             button.alpha = 1.0
             button.setBackground(UIImage(resource: .rectangleBlue))
         }
+        
+        fiftyPercentButton.isUserInteractionEnabled = GameService.shared.fiftyOnFiftyIsOn
+        helpAudienceButton.isUserInteractionEnabled = GameService.shared.audienceIsOn
+        callFriendButton.isUserInteractionEnabled = GameService.shared.callFriendIsOn
+        
+        if fiftyPercentButton.isUserInteractionEnabled == false {
+            fiftyPercentButton.isUserInteractionEnabled = false
+            fiftyPercentButton.alpha = 0.5
+        }
+        
+        if callFriendButton.isUserInteractionEnabled == false {
+            callFriendButton.isUserInteractionEnabled = false
+            callFriendButton.alpha = 0.5
+        }
+        
+        if callFriendButton.isUserInteractionEnabled == false {
+            callFriendButton.isUserInteractionEnabled = false
+            callFriendButton.alpha = 0.5
+        }
     }
 
     private func setupButtons() {
@@ -254,10 +286,6 @@ final class MainViewController: UIViewController {
         answerBButton.isUserInteractionEnabled = true
         answerCButton.isUserInteractionEnabled = true
         answerDButton.isUserInteractionEnabled = true
-
-        fiftyPercentButton.isUserInteractionEnabled = true
-        helpAudienceButton.isUserInteractionEnabled = true
-        callFriendButton.isUserInteractionEnabled = true
     }
 
     private func startTimer(time: Int) {
@@ -311,7 +339,7 @@ private extension MainViewController {
 
     @objc
     func fiftyPercentAction() {
-        let fiftyPercentAnswer = gameService.getFiftyOnFiftyAnswerIndexes()
+        let fiftyPercentAnswer = GameService.shared.getFiftyOnFiftyAnswerIndexes()
 
         let allButtons = [answerAButton, answerBButton, answerCButton, answerDButton]
         for button in allButtons {
@@ -331,7 +359,7 @@ private extension MainViewController {
 
     @objc
     func helpAudiencebuttonAction() {
-        let percentages = gameService.audienceDistribution()
+        let percentages = GameService.shared.audienceDistribution()
 
         helpAudienceButton.isUserInteractionEnabled = false
         helpAudienceButton.alpha = 0.5
@@ -352,7 +380,7 @@ private extension MainViewController {
 
     @objc
     func callFriendbuttonAction() {
-        let answer = gameService.callFriend()
+        let answer = GameService.shared.callFriend()
         callFriendButton.isUserInteractionEnabled = false
         callFriendButton.alpha = 0.5
 
@@ -386,22 +414,25 @@ private extension MainViewController {
     func answerButtonTapped(_ button: AnswerButton) {
         timer?.invalidate()
         button.flash(duration: 0.5)
-        soundService.play(sound: .choiseIsMade)
         let selectedAnswer = button.getAnswerText()!
+        let isCorrect = GameService.shared.selectAnswer(selectedAnswer)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
-            guard let self = self else { return }
-            let isCorrect = self.gameService.selectAnswer(selectedAnswer)
-            
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self, weak button] in
+            guard let self = self, let button = button else { return }
+
             let backgroundImage = isCorrect
-            ? UIImage(resource: .rectangleGreen)
-            : UIImage(resource: .rectangleRed)
+                ? UIImage(resource: .rectangleGreen)
+                : UIImage(resource: .rectangleRed)
+
             button.setBackground(backgroundImage)
-            
-            //Вызов следующего экрана
-            let mainViewController = LevelScreenViewController()
-            navigationController?.pushViewController(mainViewController, animated: true)
-           
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                guard let self = self else { return }
+
+                let vc = LevelScreenViewController()
+                vc.modalPresentationStyle = .fullScreen
+                present(vc, animated: true)
+            }
         }
 
         answerAButton.isUserInteractionEnabled = false
@@ -409,9 +440,7 @@ private extension MainViewController {
         answerCButton.isUserInteractionEnabled = false
         answerDButton.isUserInteractionEnabled = false
         
-        fiftyPercentButton.isUserInteractionEnabled = false
-        helpAudienceButton.isUserInteractionEnabled = false
-        callFriendButton.isUserInteractionEnabled = false
+        GameStorage.shared.saveHelpButton(help1: fiftyPercentButton.isUserInteractionEnabled, help2: helpAudienceButton.isUserInteractionEnabled, help3: callFriendButton.isUserInteractionEnabled)
     }
 }
 
