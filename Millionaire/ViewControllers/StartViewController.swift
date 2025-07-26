@@ -161,7 +161,7 @@ class StartViewController: UIViewController {
     override func viewDidLoad() {
         
         // STORAGE MANAGER
-        StorageManager().setGameQuestions()
+//        StorageManager().setGameQuestions()
         
         
         super.viewDidLoad()

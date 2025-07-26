@@ -25,7 +25,6 @@ final class GameService {
     var onDataLoaded: (() -> Void)?
 
     private let soundService = SoundService()
-    private let dataManager = DataManager()
 
     private var currentQuestionIndex = 0
     private var questions: [Question] = []
@@ -205,18 +204,16 @@ extension GameService {
     }
     
     func isUnfinishedGame() -> Bool {
-        //TODO: реализовать функцию по возврату есть незавершенная игра
-        return true
+        GameStorage.shared.isUnfinishedGame()
+        
     }
     
     func isBestScore() -> Bool {
-        //TODO: реализовать функцию по возврату есть ли лучший результат
-        return true
+        GameStorage.shared.isBestScore()
     }
     
     func getBestScoreValue() -> String {
-        //TODO: реализовать функцию по возврату количества наибольших очков
-        return "1500"
+        String(GameStorage.shared.getBestScore())
     }
 }
 
