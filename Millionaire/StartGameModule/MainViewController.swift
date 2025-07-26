@@ -310,7 +310,13 @@ private extension MainViewController {
 
     @objc
     private func questionChartButtonAction() {
-        // TODO: - Сделать переход на некст экран
+        let vcGameOver = LevelScreenViewController()
+        
+        GameStorage.shared.clearSavedGame()
+        SoundService.shared.play(sound: .gameWin)
+        
+        vcGameOver.modalPresentationStyle = .fullScreen
+        present(vcGameOver, animated: true)
     }
 
     @objc

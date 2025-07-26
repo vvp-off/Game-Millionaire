@@ -10,7 +10,7 @@ import Foundation
 
 class TranslaterManager {
     private let urlString = "https://translate.api.cloud.yandex.net/translate/v2/translate"
-#warning("Api key")
+//#warning("Api key")
     private var apiKey = ""
     private var translatedCharactersCount = UserDefaults.standard.integer(forKey: "translatedCharactersCount")
     

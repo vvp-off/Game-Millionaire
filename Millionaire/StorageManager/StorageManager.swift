@@ -116,7 +116,7 @@ class StorageManager {
             }
             print("✅ STORAGE transleted all questions --_>>", self.translatedGameQuestions)
 
-#warning("check UD") // save russian questions in UD
+//#warning("check UD") // save russian questions in UD
             do {
                 let data = try JSONEncoder().encode(self.translatedGameQuestions)
                 UserDefaults.standard.set(data, forKey: "translatedGameQuestions")
@@ -134,7 +134,7 @@ class StorageManager {
                 self.gameQuestions = [] // clear old questions
                 self.gameQuestions = questions
                 
-#warning("check UD") //save english questions in UD
+//#warning("check UD") //save english questions in UD
                 do {
                     let data = try JSONEncoder().encode(questions)
                     UserDefaults.standard.set(data, forKey: "gameQuestions")

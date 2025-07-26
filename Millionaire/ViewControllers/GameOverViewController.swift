@@ -59,7 +59,7 @@ class GameOverViewController: UIViewController {
     lazy var bestScoreValueLabel: UILabel = {
         let text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.text = "$\(GameService.shared.getBestScoreValue())"
+        text.text = "$\(GameService.shared.getCurrentMoney())"
         text.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
         text.textColor = .white
         return text
@@ -84,6 +84,17 @@ class GameOverViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
+    func addSubView(){
+        view.addSubview(backGround)
+        view.addSubview(iconMillionaireImage)
+        view.addSubview(labelGameOver)
+        view.addSubview(labelLevel)
+        view.addSubview(bestScoreValueLabel)
+        view.addSubview(bestScoreCoin)
+        view.addSubview(buttonMainScreen)
+        view.addSubview(buttonNewGame)
+    }
     
     func setConstraint(){
         NSLayoutConstraint.activate([
@@ -126,24 +137,21 @@ class GameOverViewController: UIViewController {
     }
     
     @objc func tapedButtonNewGame(_ sender: UIButton) {
-        navigationController?.pushViewController(MainViewController(), animated: true)
+        let vc = MainViewController()
+                    vc.modalPresentationStyle = .fullScreen
+                    present(vc, animated: true)
     }
     
     @objc func tapedButtonMaineScreen(_ sender: UIButton) {
-        navigationController?.pushViewController(StartViewController(), animated: true)
+        let vc = StartViewController()
+                    vc.modalPresentationStyle = .fullScreen
+                    present(vc, animated: true)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.isNavigationBarHidden = true
-        view.addSubview(backGround)
-        view.addSubview(iconMillionaireImage)
-        view.addSubview(labelGameOver)
-        view.addSubview(labelLevel)
-        view.addSubview(bestScoreValueLabel)
-        view.addSubview(bestScoreCoin)
-        view.addSubview(buttonMainScreen)
-        view.addSubview(buttonNewGame)
+        addSubView()
         setConstraint()
     }
 }
