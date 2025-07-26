@@ -13,8 +13,7 @@ class RulesViewController: UIViewController {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFill
-        let image = UIImage(named: "Background")
-        imageView.image = image
+        imageView.backgroundColor = UIColor(named: "RulesBackground")
         return imageView
     }()
     
@@ -43,7 +42,7 @@ class RulesViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Game Rules"
+        label.text = "Rules"
         label.font = UIFont.boldSystemFont(ofSize: 28)
         label.textColor = .white
         label.textAlignment = .center
@@ -179,6 +178,6 @@ Good luck! 🍀
     }
     
     @objc private func backButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        dismiss(animated: true)
     }
 } 

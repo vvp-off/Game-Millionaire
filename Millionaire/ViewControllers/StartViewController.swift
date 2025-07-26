@@ -24,6 +24,7 @@ class StartViewController: UIViewController {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setBackgroundImage(UIImage(systemName: "questionmark.circle.fill"), for: .normal)
+        button.addTarget(nil, action: #selector(helpButtonTaped), for: .touchUpInside)
         button.tintColor = .white
         button.widthAnchor.constraint(equalToConstant: 32).isActive = true
         button.heightAnchor.constraint(equalToConstant: 32).isActive = true
@@ -179,7 +180,7 @@ class StartViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             helpButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            helpButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -20)
+            helpButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2)
         ])
         
         view.addSubview(bestScoreAndMainLogoStackView)
@@ -222,6 +223,12 @@ class StartViewController: UIViewController {
         if gameService.isUnfinishedGame() {
             buttonsStackView.insertArrangedSubview(continueGameButton, at: 0)
         }
+    }
+    
+    @objc
+    private func helpButtonTaped() {
+        let rulesVC = RulesViewController()
+        present(rulesVC, animated: true)
     }
 
     @objc

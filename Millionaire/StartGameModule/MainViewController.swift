@@ -142,7 +142,7 @@ final class MainViewController: UIViewController {
         let button = UIButton()
         button.setBackgroundImage(UIImage(resource: ._50_50), for: .normal)
         button.addTarget(
-            self,
+            nil,
             action: #selector(fiftyPercentAction),
             for: .touchUpInside
         )
@@ -154,7 +154,7 @@ final class MainViewController: UIViewController {
         let button = UIButton()
         button.setBackgroundImage(UIImage(resource: .audience), for: .normal)
         button.addTarget(
-            self,
+            nil,
             action: #selector(helpAudiencebuttonAction),
             for: .touchUpInside
         )
@@ -166,7 +166,7 @@ final class MainViewController: UIViewController {
         let button = UIButton()
         button.setBackgroundImage(UIImage(resource: .call), for: .normal)
         button.addTarget(
-            self,
+            nil,
             action: #selector(callFriendbuttonAction),
             for: .touchUpInside
         )
