@@ -9,8 +9,6 @@ import UIKit
 
 class StartViewController: UIViewController {
     
-    let gameService = GameService()
-    
     let backgroundView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -86,7 +84,7 @@ class StartViewController: UIViewController {
     lazy var bestScoreValueLabel: UILabel = {
         let text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.text = "$\(gameService.getBestScoreValue())"
+        text.text = "$\(GameService.shared.getBestScoreValue())"
         text.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
         text.textColor = .white
         return text
@@ -125,7 +123,7 @@ class StartViewController: UIViewController {
     }()
     
     lazy var continueGameButton: UIButton = {
-        return createButton(with: "Continue game", action: startGameButtonAction, bgImage: "orangeButton")
+        return createButton(with: "Continue game", action: continueGameButtonAction, bgImage: "orangeButton")
     }()
     
     private func createButton(with title: String, action: @escaping () -> Void, bgImage: String) -> UIButton {
@@ -159,6 +157,7 @@ class StartViewController: UIViewController {
 
     
     override func viewDidLoad() {
+//        GameService.shared.loadData()
         
         // STORAGE MANAGER
 //        StorageManager().setGameQuestions()
@@ -198,7 +197,7 @@ class StartViewController: UIViewController {
         mainTextAndLogoStackView.addArrangedSubview(mainTextLabelTitle)
         
         //TODO: реализовать метод, который возвращает есть ли лучший результат
-        if gameService.isBestScore() {
+        if GameService.shared.isBestScore() {
             bestScoreAndMainLogoStackView.addArrangedSubview(bestScoreStackView)
             
             bestScoreStackView.addArrangedSubview(bestScoreLabelTitel)
@@ -220,7 +219,11 @@ class StartViewController: UIViewController {
         
         buttonsStackView.addArrangedSubview(startGameButton)
         //TODO: реализовать метод, который возвращает есть ли незавершенная игра
-        if gameService.isUnfinishedGame() {
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if GameService.shared.isUnfinishedGame() {
             buttonsStackView.insertArrangedSubview(continueGameButton, at: 0)
         }
     }
@@ -233,8 +236,10 @@ class StartViewController: UIViewController {
 
     @objc
     private func startGameButtonAction() {
+        GameStorage.shared.clearSavedGame()
         let mainViewController = MainViewController()
         navigationController?.pushViewController(mainViewController, animated: true)
+        
     }
     //TODO: вероятно нужно как то иначе делать переход так как данные идут не с нуля
     @objc

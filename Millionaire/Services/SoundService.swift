@@ -16,6 +16,10 @@ enum GameSound: String {
 }
 
 class SoundService {
+    static let shared = SoundService()
+    
+    private init() {}
+    
     private var audioPlayer: AVAudioPlayer?
     
     func play(sound: GameSound) {

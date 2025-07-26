@@ -10,7 +10,7 @@ import UIKit
 class LevelScreenViewController: UIViewController {
     
     let questions = (1...15).reversed().map { "\($0):" }
-    let amountOfMoney = [
+    var amountOfMoney = [
         1000000,
         500000,
         250000,
@@ -27,6 +27,7 @@ class LevelScreenViewController: UIViewController {
         1000,
         500
     ]
+    var currentMoney = 0
     
     private lazy var takeTheMoney: UIImageView = {
         let image = UIImageView()
@@ -58,6 +59,23 @@ class LevelScreenViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setConstraints()
+        setMoney()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if currentMoney == 0 {
+            GameStorage.shared.clearSavedGame()
+            let vc = GameOverViewController()
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true)
+        }
+    }
+    
+    func setMoney() {
+        guard let money = Int(GameService.shared.getCurrentMoney()) else { return }
+        print(money)
+        currentMoney = money
     }
 }
 
@@ -80,12 +98,24 @@ extension LevelScreenViewController: UITableViewDelegate, UITableViewDataSource 
         default:
             cell.setQuestionImage(image: UIImage(resource: .questionLevelBlue))
         }
+        
+        if (amountOfMoney[indexPath.row] == currentMoney) {
+            cell.setQuestionImage(image: UIImage(resource: .questionLevelGreen))
+        }
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.tableView.deselectRow(at: indexPath, animated: true)
-        print(questions[indexPath.row])
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let currentQuestionIndex = GameService.shared.getQuestionNumber()
+        let clickableRowIndex = amountOfMoney.count - 1 - currentQuestionIndex
+
+        if indexPath.row == clickableRowIndex {
+            GameService.shared.nextQuestion()
+            dismiss(animated: true)
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -142,6 +172,13 @@ private extension LevelScreenViewController {
     }
     
     @objc func takeTheMoneyTapped() {
-        print(#function)
+        GameStorage.shared.saveBestScore(currentMoney)
+        GameStorage.shared.clearSavedGame()
+        
+        SoundService.shared.play(sound: .gameWin)
+        
+        let vc = GameOverViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  DataManager.swift
+//  GameStorage.swift
 //  Millionaire
 //
 //  Created by Кирилл Бахаровский on 7/23/25.
@@ -14,9 +14,16 @@ struct GameSaveData: Codable {
     let questions: [Question]
 }
 
+struct GameSaveDataHelp: Codable {
+    let help1: Bool
+    let help2: Bool
+    let help3: Bool
+}
+
 final class GameStorage {
     private let unfinishedGameKey = "unfinishedGame"
     private let bestScoreKey = "bestScore"
+    private let saveButtonKey = "saveButtonKey"
     
     static let shared = GameStorage()
     
@@ -24,18 +31,22 @@ final class GameStorage {
     
     // MARK: - Сохранение текущей игры
     func saveGameState(index: Int, score: Int, questions: [Question]) {
+        print("Сохранение игры")
         let saveData = GameSaveData(questionIndex: index, score: score, questions: questions)
         if let encoded = try? JSONEncoder().encode(saveData) {
             UserDefaults.standard.set(encoded, forKey: unfinishedGameKey)
         }
+        saveBestScore(score)
     }
     
     // MARK: - Загрузка игры
     func loadGameState() -> GameSaveData? {
+        print("Загрузка игры")
         guard let data = UserDefaults.standard.data(forKey: unfinishedGameKey),
               let decoded = try? JSONDecoder().decode(GameSaveData.self, from: data) else {
             return nil
         }
+        print(decoded.questionIndex, decoded.questions[0], decoded.score)
         return decoded
     }
     
@@ -63,5 +74,21 @@ final class GameStorage {
 
     func getBestScore() -> String {
         return String(UserDefaults.standard.integer(forKey: bestScoreKey))
+    }
+    
+    func saveHelpButton(help1: Bool, help2: Bool, help3: Bool)  {
+        let saveData = GameSaveDataHelp(help1: help1, help2: help2, help3: help3)
+        if let encoded = try? JSONEncoder().encode(saveData) {
+            UserDefaults.standard.set(encoded, forKey: saveButtonKey)
+        }
+    }
+    
+    func loadHelpButton() -> GameSaveDataHelp? {
+        guard let data = UserDefaults.standard.data(forKey: saveButtonKey),
+              let decoded = try? JSONDecoder().decode(GameSaveDataHelp.self, from: data) else {
+            return nil
+        }
+        print(decoded.help1, decoded.help2, decoded.help3)
+        return decoded
     }
 }

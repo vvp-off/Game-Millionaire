@@ -9,8 +9,6 @@ import UIKit
 
 class GameOverViewController: UIViewController {
     
-    let gameService = GameService()
-    
     let backGround: UIView = {
         let back = UIImageView()
         back.image = UIImage(named: "Background")
@@ -38,7 +36,7 @@ class GameOverViewController: UIViewController {
     var labelLevel: UILabel = {
         let label = UILabel()
         var labelCorrect = "8"
-        label.text = "Level \(labelCorrect)"
+        label.text = "Level \(GameService.shared.getQuestionNumber())"
         label.font = UIFont.systemFont(ofSize: 16)
         label.textColor = .white
         label.alpha = 0.5
@@ -61,7 +59,7 @@ class GameOverViewController: UIViewController {
     lazy var bestScoreValueLabel: UILabel = {
         let text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.text = "$\(gameService.getBestScoreValue())"
+        text.text = "$\(GameService.shared.getBestScoreValue())"
         text.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
         text.textColor = .white
         return text
